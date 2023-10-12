@@ -5,7 +5,7 @@ namespace SNS.Publisher.Contracts
 {
 	public interface ISNSPublisherService
 	{
-		Task<PublishResponse> PublishSNSMessageAsync();
+		Task<PublishResponse> PublishSNSMessageAsync<T>(T messge);
 
     }
 }

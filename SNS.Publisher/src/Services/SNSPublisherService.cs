@@ -18,26 +18,26 @@ namespace SNS.Publisher.Services
             _amazonSimpleNotificationService = amazonSimpleNotificationService;
         }
 
-        public async Task<PublishResponse> PublishSNSMessageAsync()
+        public async Task<PublishResponse> PublishSNSMessageAsync<T>(T message)
         {
-            var orderCreatedMessage = CreateOrderMessage();
+            
             var topicArn = await GetArnTopicAsync();
 
-            if(string.IsNullOrEmpty(topicArn))
+            if(!string.IsNullOrEmpty(topicArn))
             {
-                var publishRequest = GetPublishRequest(orderCreatedMessage, topicArn);
-                var response = await _amazonSimpleNotificationService.PublishAsync(publishRequest);
-                return response;
+                var publishRequest = GetPublishRequest(message, topicArn);
+                var _ = await _amazonSimpleNotificationService.PublishAsync(publishRequest);
+                
             }
 
             throw new Exception("Topic ARN not found!!!");
         }
 
-        private PublishRequest GetPublishRequest(OrderCreated orderCreated, string topicArn)
+        private PublishRequest GetPublishRequest<T>(T message, string topicArn)
         {
             var publishRequest = new PublishRequest
             {
-                Message = JsonSerializer.Serialize(orderCreated),
+                Message = JsonSerializer.Serialize(message),
                 TopicArn = topicArn,
                 MessageAttributes = new Dictionary<string, MessageAttributeValue>
             {
@@ -55,7 +55,7 @@ namespace SNS.Publisher.Services
         }
 
 
-        private async Task<string> GetArnTopicAsync()
+        private async ValueTask<string> GetArnTopicAsync()
         {
             if (string.IsNullOrEmpty(topicArnCache))
             {
@@ -67,20 +67,6 @@ namespace SNS.Publisher.Services
             return topicArnCache;
         }
 
-
-        private OrderCreated CreateOrderMessage()
-        {
-            var message = new OrderCreated
-            {
-                Id = Guid.NewGuid(),
-                Name = "Jordan 3s",
-                category = "Shoes",
-                price = 243.98,
-                amount = 1,
-                size = "Large"
-            };
-            return message;
-        }
     }
 }
 

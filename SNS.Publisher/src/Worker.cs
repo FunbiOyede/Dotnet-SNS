@@ -22,13 +22,28 @@ public class Worker : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var response = SNSPublisherService.PublishSNSMessageAsync();
-            Console.WriteLine(response.Status.ToString());
+            var message = CreateOrderMessage();
+            var response = SNSPublisherService.PublishSNSMessageAsync(message);
+            
 
             _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
             await Task.Delay(10000, stoppingToken);
             
         }
     }
-    
+
+    private OrderCreated CreateOrderMessage()
+    {
+        var message = new OrderCreated
+        {
+            Id = Guid.NewGuid(),
+            Name = "New Balance 550's",
+            category = "Shoes",
+            price = 243.98,
+            amount = 1,
+            size = "Large"
+        };
+        return message;
+    }
+
 }
